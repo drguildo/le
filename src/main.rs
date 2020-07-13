@@ -2,6 +2,8 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
 
+use clap::{App, Arg};
+
 use walkdir::WalkDir;
 
 #[derive(Debug)]
@@ -28,7 +30,26 @@ impl LineEndingStats {
 }
 
 fn main() {
-    for entry in WalkDir::new(".") {
+    let matches = App::new("le")
+        .version("0.1.0")
+        .author("Simon Morgan <sjm@sjm.io>")
+        .about("A utility for checking file line-endings")
+        .arg(
+            Arg::with_name("PATHS")
+                .help("The paths to process")
+                .required(true)
+                .multiple(true)
+                .index(1),
+        )
+        .get_matches();
+
+    for path in matches.values_of("PATHS").unwrap() {
+        process_path(path);
+    }
+}
+
+fn process_path(path: &str) {
+    for entry in WalkDir::new(path) {
         match entry {
             Ok(entry) => {
                 if entry.file_type().is_file() {
@@ -36,7 +57,11 @@ fn main() {
                     match stats {
                         Ok(stats) => {
                             if stats.is_mixed() {
-                                println!("{} has mixed line endings: {:?}", entry.path().display(), stats);
+                                println!(
+                                    "{} has mixed line endings: {:?}",
+                                    entry.path().display(),
+                                    stats
+                                );
                             }
                         }
                         Err(err) => eprintln!("{}", err),
