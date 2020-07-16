@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate clap;
+
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::Path;
@@ -42,10 +45,10 @@ impl LineEndingStats {
 }
 
 fn main() {
-    let matches = App::new("le")
-        .version("0.1.0")
-        .author("Simon Morgan <sjm@sjm.io>")
-        .about("A utility for checking file line-endings")
+    let matches = App::new(crate_name!())
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .arg(
             Arg::with_name("type")
                 .help("The type of line endings to search for")
