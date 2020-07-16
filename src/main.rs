@@ -35,10 +35,19 @@ fn main() {
         .author("Simon Morgan <sjm@sjm.io>")
         .about("A utility for checking file line-endings")
         .arg(
+            Arg::with_name("type")
+                .help("The type of line endings to search for")
+                .long("type")
+                .takes_value(true)
+                .possible_values(["crlf", "lf", "mixed"].as_ref())
+                .default_value("mixed"),
+        )
+        .arg(
             Arg::with_name("PATHS")
                 .help("The paths to process")
                 .required(true)
-                .multiple(true),
+                .multiple(true)
+                .last(true),
         )
         .get_matches();
 
