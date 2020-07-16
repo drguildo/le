@@ -14,6 +14,18 @@ struct LineEndingStats {
 }
 
 impl LineEndingStats {
+    fn is_cr(&self) -> bool {
+        self.cr > 0 && self.lf == 0 && self.crlf == 0
+    }
+
+    fn is_lf(&self) -> bool {
+        self.cr == 0 && self.lf > 0 && self.crlf == 0
+    }
+
+    fn is_crlf(&self) -> bool {
+        self.cr == 0 && self.lf == 0 && self.crlf > 0
+    }
+
     fn is_mixed(&self) -> bool {
         let mut num_types = 0;
         if self.cr > 0 {
@@ -64,13 +76,20 @@ fn process_path(path: &str) {
                     let stats = count_line_endings(entry.path());
                     match stats {
                         Ok(stats) => {
+                            print!("{} has ", entry.path().display());
                             if stats.is_mixed() {
-                                println!(
-                                    "{} has mixed line endings: {:?}",
-                                    entry.path().display(),
-                                    stats
-                                );
+                                print!("mixed");
+                            } else {
+                                // TODO: handle files with no line endings
+                                if stats.is_cr() {
+                                    print!("cr");
+                                } else if stats.is_lf() {
+                                    print!("lf");
+                                } else if stats.is_crlf() {
+                                    print!("crlf");
+                                }
                             }
+                            println!(" line endings");
                         }
                         Err(err) => eprintln!("{}", err),
                     }
