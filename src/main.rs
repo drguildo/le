@@ -61,8 +61,7 @@ fn main() {
             Arg::with_name("PATHS")
                 .help("The paths to process")
                 .required(true)
-                .multiple(true)
-                .last(true),
+                .multiple(true),
         )
         .get_matches();
 
