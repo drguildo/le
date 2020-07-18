@@ -9,6 +9,13 @@ use clap::{App, Arg};
 
 use walkdir::WalkDir;
 
+enum LineEndingType {
+    CR,
+    LF,
+    CRLF,
+    MIXED
+}
+
 #[derive(Debug)]
 struct LineEndingStats {
     cr: u32,
@@ -50,7 +57,7 @@ fn main() {
         .author(crate_authors!())
         .about(crate_description!())
         .arg(
-            Arg::with_name("type")
+            Arg::with_name("TYPE")
                 .help("The type of line endings to search for")
                 .long("type")
                 .takes_value(true)
@@ -65,12 +72,18 @@ fn main() {
         )
         .get_matches();
 
+    let match_on: LineEndingType = match matches.value_of("TYPE").unwrap() {
+        "cr" => LineEndingType::CR,
+        "lf" => LineEndingType::LF,
+        "crlf" => LineEndingType::CRLF,
+        _ => LineEndingType::MIXED
+    };
     for path in matches.values_of("PATHS").unwrap() {
-        process_path(path);
+        process_path(path, &match_on);
     }
 }
 
-fn process_path(path: &str) {
+fn process_path(path: &str, match_on: &LineEndingType) {
     for entry in WalkDir::new(path) {
         match entry {
             Ok(entry) => {
@@ -78,21 +91,29 @@ fn process_path(path: &str) {
                     let stats = count_line_endings(entry.path());
                     match stats {
                         Ok(stats) => {
-                            print!("{} has ", entry.path().display());
-                            if stats.is_mixed() {
-                                print!("mixed");
-                            } else {
-                                if stats.is_cr() {
-                                    print!("cr");
-                                } else if stats.is_lf() {
-                                    print!("lf");
-                                } else if stats.is_crlf() {
-                                    print!("crlf");
-                                } else {
-                                    print!("no")
-                                }
+                            let path_display = entry.path().display();
+                            match match_on {
+                                LineEndingType::CR => {
+                                    if stats.is_cr() {
+                                        println!("{} has cr line endings", path_display)
+                                    }
+                                },
+                                LineEndingType::LF =>  {
+                                    if stats.is_lf() {
+                                        println!("{} has lf line endings", path_display)
+                                    }
+                                },
+                                LineEndingType::CRLF =>  {
+                                    if stats.is_crlf() {
+                                        println!("{} has crlf line endings", path_display)
+                                    }
+                                },
+                                LineEndingType::MIXED =>  {
+                                    if stats.is_mixed() {
+                                        println!("{} has mixed line endings", path_display)
+                                    }
+                                },
                             }
-                            println!(" line endings");
                         }
                         Err(err) => eprintln!("{}", err),
                     }
