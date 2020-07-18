@@ -82,13 +82,14 @@ fn process_path(path: &str) {
                             if stats.is_mixed() {
                                 print!("mixed");
                             } else {
-                                // TODO: handle files with no line endings
                                 if stats.is_cr() {
                                     print!("cr");
                                 } else if stats.is_lf() {
                                     print!("lf");
                                 } else if stats.is_crlf() {
                                     print!("crlf");
+                                } else {
+                                    print!("no")
                                 }
                             }
                             println!(" line endings");
