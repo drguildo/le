@@ -1,19 +1,10 @@
-#[macro_use]
-extern crate clap;
-
-use std::fs::File;
-use std::io::prelude::*;
 use std::path::Path;
-
-use clap::{App, Arg};
-
-use walkdir::WalkDir;
 
 enum LineEndingType {
     CR,
     LF,
     CRLF,
-    MIXED
+    MIXED,
 }
 
 #[derive(Debug)]
@@ -52,6 +43,8 @@ impl LineEndingStats {
 }
 
 fn main() {
+    use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
+
     let matches = App::new(crate_name!())
         .version(crate_version!())
         .author(crate_authors!())
@@ -76,7 +69,7 @@ fn main() {
         "cr" => LineEndingType::CR,
         "lf" => LineEndingType::LF,
         "crlf" => LineEndingType::CRLF,
-        _ => LineEndingType::MIXED
+        _ => LineEndingType::MIXED,
     };
     for path in matches.values_of("PATHS").unwrap() {
         process_path(path, &match_on);
@@ -84,7 +77,7 @@ fn main() {
 }
 
 fn process_path(path: &str, match_on: &LineEndingType) {
-    for entry in WalkDir::new(path) {
+    for entry in walkdir::WalkDir::new(path) {
         match entry {
             Ok(entry) => {
                 if entry.file_type().is_file() {
@@ -97,22 +90,22 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                                     if stats.is_cr() {
                                         println!("{} has cr line endings", path_display)
                                     }
-                                },
-                                LineEndingType::LF =>  {
+                                }
+                                LineEndingType::LF => {
                                     if stats.is_lf() {
                                         println!("{} has lf line endings", path_display)
                                     }
-                                },
-                                LineEndingType::CRLF =>  {
+                                }
+                                LineEndingType::CRLF => {
                                     if stats.is_crlf() {
                                         println!("{} has crlf line endings", path_display)
                                     }
-                                },
-                                LineEndingType::MIXED =>  {
+                                }
+                                LineEndingType::MIXED => {
                                     if stats.is_mixed() {
                                         println!("{} has mixed line endings", path_display)
                                     }
-                                },
+                                }
                             }
                         }
                         Err(err) => eprintln!("{}", err),
@@ -125,6 +118,8 @@ fn process_path(path: &str, match_on: &LineEndingType) {
 }
 
 fn count_line_endings(file_path: &Path) -> Result<LineEndingStats, std::io::Error> {
+    use std::io::Read;
+
     const LINE_FEED: u8 = 0x0A;
     const CARRIAGE_RETURN: u8 = 0x0D;
 
@@ -136,7 +131,7 @@ fn count_line_endings(file_path: &Path) -> Result<LineEndingStats, std::io::Erro
     let mut cur: u8;
     let mut prev: u8 = 0;
 
-    let f: File = File::open(file_path)?;
+    let f: std::fs::File = std::fs::File::open(file_path)?;
 
     for byte in f.bytes() {
         cur = byte?;
