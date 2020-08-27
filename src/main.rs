@@ -128,26 +128,25 @@ fn count_line_endings(file_path: &Path) -> Result<LineEndingStats, std::io::Erro
         cr: 0,
         crlf: 0,
     };
-    let mut cur: u8;
     let mut prev: u8 = 0;
 
-    let f: std::fs::File = std::fs::File::open(file_path)?;
+    let mut file: std::fs::File = std::fs::File::open(file_path)?;
+    let mut file_bytes: Vec<u8> = Vec::with_capacity(file.metadata().unwrap().len() as usize);
+    file.read_to_end(&mut file_bytes).unwrap();
 
-    for byte in f.bytes() {
-        cur = byte?;
-
-        if cur == LINE_FEED {
+    for byte in file_bytes.into_iter() {
+        if byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf += 1;
                 stats.cr -= 1;
             } else {
                 stats.lf += 1;
             }
-        } else if cur == CARRIAGE_RETURN {
+        } else if byte == CARRIAGE_RETURN {
             stats.cr += 1;
         }
 
-        prev = cur;
+        prev = byte;
     }
 
     Ok(stats)
