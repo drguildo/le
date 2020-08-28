@@ -1,5 +1,3 @@
-use std::path::Path;
-
 enum LineEndingType {
     CR,
     LF,
@@ -7,7 +5,6 @@ enum LineEndingType {
     MIXED,
 }
 
-#[derive(Debug)]
 struct LineEndingStats {
     cr: u32,
     lf: u32,
@@ -117,9 +114,7 @@ fn process_path(path: &str, match_on: &LineEndingType) {
     }
 }
 
-fn count_line_endings(file_path: &Path) -> Result<LineEndingStats, std::io::Error> {
-    use std::io::Read;
-
+fn count_line_endings(file_path: &std::path::Path) -> Result<LineEndingStats, std::io::Error> {
     const LINE_FEED: u8 = 0x0A;
     const CARRIAGE_RETURN: u8 = 0x0D;
 
@@ -130,10 +125,7 @@ fn count_line_endings(file_path: &Path) -> Result<LineEndingStats, std::io::Erro
     };
     let mut prev: u8 = 0;
 
-    let mut file: std::fs::File = std::fs::File::open(file_path)?;
-    let mut file_bytes: Vec<u8> = Vec::with_capacity(file.metadata().unwrap().len() as usize);
-    file.read_to_end(&mut file_bytes).unwrap();
-
+    let file_bytes: Vec<u8> = std::fs::read(file_path)?;
     for byte in file_bytes.into_iter() {
         if byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
