@@ -1,3 +1,5 @@
+ - Separate the file handling logic from the line-ending detection logic
+
 # Ideas
 
  - Support for filename filtering/globbing
