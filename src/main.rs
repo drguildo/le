@@ -1,41 +1,25 @@
 enum LineEndingType {
-    CR,
     LF,
     CRLF,
     MIXED,
 }
 
 struct LineEndingStats {
-    cr: u32,
     lf: u32,
     crlf: u32,
 }
 
 impl LineEndingStats {
-    fn is_cr(&self) -> bool {
-        self.cr > 0 && self.lf == 0 && self.crlf == 0
-    }
-
     fn is_lf(&self) -> bool {
-        self.cr == 0 && self.lf > 0 && self.crlf == 0
+        self.lf > 0 && self.crlf == 0
     }
 
     fn is_crlf(&self) -> bool {
-        self.cr == 0 && self.lf == 0 && self.crlf > 0
+        self.lf == 0 && self.crlf > 0
     }
 
     fn is_mixed(&self) -> bool {
-        let mut num_types = 0;
-        if self.cr > 0 {
-            num_types += 1;
-        }
-        if self.lf > 0 {
-            num_types += 1;
-        }
-        if self.crlf > 0 {
-            num_types += 1;
-        }
-        return num_types > 1;
+        self.lf > 0 && self.crlf > 0
     }
 }
 
@@ -63,7 +47,6 @@ fn main() {
         .get_matches();
 
     let match_on: LineEndingType = match matches.value_of("TYPE").unwrap() {
-        "cr" => LineEndingType::CR,
         "lf" => LineEndingType::LF,
         "crlf" => LineEndingType::CRLF,
         _ => LineEndingType::MIXED,
@@ -83,11 +66,6 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                         Ok(stats) => {
                             let path_display = entry.path().display();
                             match match_on {
-                                LineEndingType::CR => {
-                                    if stats.is_cr() {
-                                        println!("{} has cr line endings", path_display)
-                                    }
-                                }
                                 LineEndingType::LF => {
                                     if stats.is_lf() {
                                         println!("{} has lf line endings", path_display)
@@ -120,7 +98,6 @@ fn count_line_endings(file_path: &std::path::Path) -> Result<LineEndingStats, st
 
     let mut stats = LineEndingStats {
         lf: 0,
-        cr: 0,
         crlf: 0,
     };
     let mut prev: u8 = 0;
@@ -130,12 +107,9 @@ fn count_line_endings(file_path: &std::path::Path) -> Result<LineEndingStats, st
         if byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf += 1;
-                stats.cr -= 1;
             } else {
                 stats.lf += 1;
             }
-        } else if byte == CARRIAGE_RETURN {
-            stats.cr += 1;
         }
 
         prev = byte;
