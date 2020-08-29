@@ -1,4 +1,5 @@
  - Separate the file handling logic from the line-ending detection logic
+ - Handle non-text files? Exit early when a null byte is found?
 
 # Ideas
 
