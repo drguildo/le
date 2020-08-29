@@ -61,10 +61,10 @@ fn process_path(path: &str, match_on: &LineEndingType) {
         match entry {
             Ok(entry) => {
                 if entry.file_type().is_file() {
-                    let stats = count_line_endings(entry.path());
-                    match stats {
-                        Ok(stats) => {
-                            let path_display = entry.path().display();
+                    let path_display = entry.path().display();
+                    match std::fs::read(entry.path()) {
+                        Ok(file_bytes) => {
+                            let stats = count_line_endings(file_bytes);
                             match match_on {
                                 LineEndingType::LF => {
                                     if stats.is_lf() {
@@ -83,7 +83,9 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                                 }
                             }
                         }
-                        Err(err) => eprintln!("{}", err),
+                        Err(err) => {
+                            eprint!("failed to read {}: {}", path_display, err);
+                        }
                     }
                 }
             }
@@ -92,18 +94,14 @@ fn process_path(path: &str, match_on: &LineEndingType) {
     }
 }
 
-fn count_line_endings(file_path: &std::path::Path) -> Result<LineEndingStats, std::io::Error> {
+fn count_line_endings(bytes: Vec<u8>) -> LineEndingStats {
     const LINE_FEED: u8 = 0x0A;
     const CARRIAGE_RETURN: u8 = 0x0D;
 
-    let mut stats = LineEndingStats {
-        lf: 0,
-        crlf: 0,
-    };
+    let mut stats = LineEndingStats { lf: 0, crlf: 0 };
     let mut prev: u8 = 0;
 
-    let file_bytes: Vec<u8> = std::fs::read(file_path)?;
-    for byte in file_bytes.into_iter() {
+    for byte in bytes.into_iter() {
         if byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf += 1;
@@ -115,5 +113,5 @@ fn count_line_endings(file_path: &std::path::Path) -> Result<LineEndingStats, st
         prev = byte;
     }
 
-    Ok(stats)
+    stats
 }
