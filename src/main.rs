@@ -33,6 +33,7 @@ fn main() {
         .arg(
             Arg::with_name("TYPE")
                 .help("The type of line endings to search for")
+                .short("t")
                 .long("type")
                 .takes_value(true)
                 .possible_values(["crlf", "lf", "mixed"].as_ref())
