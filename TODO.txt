@@ -1,5 +1,6 @@
- - Separate the file handling logic from the line-ending detection logic
  - Handle non-text files? Exit early when a null byte is found?
+ - Add ability to print out lines (or at least line numbers) that have a
+   particular line ending
 
 # Ideas
 
