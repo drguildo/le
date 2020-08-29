@@ -1,15 +1,4 @@
 # Ideas
 
-User passes one or more paths as parameters
-Each path can either be to a file or directory
-    If a directory, recursively process each file and directory within it
-By default, only print output if a file with mixed line endings is detected
-    Options to specify whether another type of line ending is detected
-Option to specify a filename glob of file paths to process
-    Option to specify a filename glob of files to exclude from processing
-
-# Possible Command Line
-
---detect [cr, lf, crlf, mixed]
---stats
---filter *.txt,*.rs
+ - Support for filename filtering/globbing
+ - Support for outputting which lines contain which type of line ending
