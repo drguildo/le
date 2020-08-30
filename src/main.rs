@@ -32,6 +32,13 @@ fn main() {
         .author(crate_authors!())
         .about(crate_description!())
         .arg(
+            Arg::with_name("LINE_NUMBERS")
+                .help("If the file contains mixed line endings, print which lines contain which line endings.")
+                .short("l")
+                .long("line-numbers")
+                .takes_value(false),
+        )
+        .arg(
             Arg::with_name("TYPE")
                 .help("The type of line endings to search for")
                 .short("t")
@@ -53,12 +60,15 @@ fn main() {
         "crlf" => LineEndingType::CRLF,
         _ => LineEndingType::MIXED,
     };
+
+    let print_line_numbers: bool = matches.is_present("LINE_NUMBERS");
+
     for path in matches.values_of("PATHS").unwrap() {
-        process_path(path, &match_on);
+        process_path(path, &match_on, print_line_numbers);
     }
 }
 
-fn process_path(path: &str, match_on: &LineEndingType) {
+fn process_path(path: &str, match_on: &LineEndingType, print_line_numbers: bool) {
     for entry in walkdir::WalkDir::new(path) {
         match entry {
             Ok(entry) => {
@@ -67,22 +77,25 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                     match std::fs::read(entry.path()) {
                         Ok(file_bytes) => {
                             let stats = count_line_endings(&file_bytes);
-                            println!("{:?}", stats);
 
                             match match_on {
                                 LineEndingType::LF => {
                                     if stats.is_lf() {
-                                        println!("{} has lf line endings", path_display)
+                                        println!("{} has LF line endings", path_display);
                                     }
                                 }
                                 LineEndingType::CRLF => {
                                     if stats.is_crlf() {
-                                        println!("{} has crlf line endings", path_display)
+                                        println!("{} has CRLF line endings", path_display);
                                     }
                                 }
                                 LineEndingType::MIXED => {
                                     if stats.is_mixed() {
-                                        println!("{} has mixed line endings", path_display)
+                                        println!("{} has mixed line endings", path_display);
+                                        if print_line_numbers {
+                                            println!("LF: {:?}", stats.lf);
+                                            println!("CRLF: {:?}", stats.crlf);
+                                        }
                                     }
                                 }
                             }
