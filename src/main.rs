@@ -4,22 +4,23 @@ enum LineEndingType {
     MIXED,
 }
 
+#[derive(Debug)]
 struct LineEndingStats {
-    lf: u32,
-    crlf: u32,
+    lf: Vec<usize>,
+    crlf: Vec<usize>,
 }
 
 impl LineEndingStats {
     fn is_lf(&self) -> bool {
-        self.lf > 0 && self.crlf == 0
+        self.lf.len() > 0 && self.crlf.len() == 0
     }
 
     fn is_crlf(&self) -> bool {
-        self.lf == 0 && self.crlf > 0
+        self.lf.len() == 0 && self.crlf.len() > 0
     }
 
     fn is_mixed(&self) -> bool {
-        self.lf > 0 && self.crlf > 0
+        self.lf.len() > 0 && self.crlf.len() > 0
     }
 }
 
@@ -66,6 +67,8 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                     match std::fs::read(entry.path()) {
                         Ok(file_bytes) => {
                             let stats = count_line_endings(&file_bytes);
+                            println!("{:?}", stats);
+
                             match match_on {
                                 LineEndingType::LF => {
                                     if stats.is_lf() {
@@ -99,16 +102,21 @@ fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
     const LINE_FEED: u8 = 0x0A;
     const CARRIAGE_RETURN: u8 = 0x0D;
 
-    let mut stats = LineEndingStats { lf: 0, crlf: 0 };
+    let mut stats = LineEndingStats {
+        lf: vec![],
+        crlf: vec![],
+    };
     let mut prev: u8 = 0;
+    let mut line_number: usize = 1;
 
     for byte in bytes.into_iter() {
         if *byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
-                stats.crlf += 1;
+                stats.crlf.push(line_number);
             } else {
-                stats.lf += 1;
+                stats.lf.push(line_number);
             }
+            line_number += 1;
         }
 
         prev = *byte;
