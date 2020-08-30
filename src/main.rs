@@ -65,7 +65,7 @@ fn process_path(path: &str, match_on: &LineEndingType) {
                     let path_display = entry.path().display();
                     match std::fs::read(entry.path()) {
                         Ok(file_bytes) => {
-                            let stats = count_line_endings(file_bytes);
+                            let stats = count_line_endings(&file_bytes);
                             match match_on {
                                 LineEndingType::LF => {
                                     if stats.is_lf() {
@@ -95,7 +95,7 @@ fn process_path(path: &str, match_on: &LineEndingType) {
     }
 }
 
-fn count_line_endings(bytes: Vec<u8>) -> LineEndingStats {
+fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
     const LINE_FEED: u8 = 0x0A;
     const CARRIAGE_RETURN: u8 = 0x0D;
 
@@ -103,7 +103,7 @@ fn count_line_endings(bytes: Vec<u8>) -> LineEndingStats {
     let mut prev: u8 = 0;
 
     for byte in bytes.into_iter() {
-        if byte == LINE_FEED {
+        if *byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf += 1;
             } else {
@@ -111,7 +111,7 @@ fn count_line_endings(bytes: Vec<u8>) -> LineEndingStats {
             }
         }
 
-        prev = byte;
+        prev = *byte;
     }
 
     stats
