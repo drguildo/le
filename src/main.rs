@@ -1,28 +1,4 @@
-enum LineEndingType {
-    LF,
-    CRLF,
-    MIXED,
-}
-
-#[derive(Debug)]
-struct LineEndingStats {
-    lf: Vec<usize>,
-    crlf: Vec<usize>,
-}
-
-impl LineEndingStats {
-    fn is_lf(&self) -> bool {
-        self.lf.len() > 0 && self.crlf.len() == 0
-    }
-
-    fn is_crlf(&self) -> bool {
-        self.lf.len() == 0 && self.crlf.len() > 0
-    }
-
-    fn is_mixed(&self) -> bool {
-        self.lf.len() > 0 && self.crlf.len() > 0
-    }
-}
+mod le;
 
 fn main() {
     use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
@@ -55,10 +31,10 @@ fn main() {
         )
         .get_matches();
 
-    let match_on: LineEndingType = match matches.value_of("TYPE").unwrap() {
-        "lf" => LineEndingType::LF,
-        "crlf" => LineEndingType::CRLF,
-        _ => LineEndingType::MIXED,
+    let match_on: le::LineEndingType = match matches.value_of("TYPE").unwrap() {
+        "lf" => le::LineEndingType::LF,
+        "crlf" => le::LineEndingType::CRLF,
+        _ => le::LineEndingType::MIXED,
     };
 
     let print_line_numbers: bool = matches.is_present("LINE_NUMBERS");
@@ -68,7 +44,7 @@ fn main() {
     }
 }
 
-fn process_path(path: &str, match_on: &LineEndingType, print_line_numbers: bool) {
+fn process_path(path: &str, match_on: &le::LineEndingType, print_line_numbers: bool) {
     for entry in walkdir::WalkDir::new(path) {
         match entry {
             Ok(entry) => {
@@ -76,20 +52,20 @@ fn process_path(path: &str, match_on: &LineEndingType, print_line_numbers: bool)
                     let path_display = entry.path().display();
                     match std::fs::read(entry.path()) {
                         Ok(file_bytes) => {
-                            let stats = count_line_endings(&file_bytes);
+                            let stats = le::count_line_endings(&file_bytes);
 
                             match match_on {
-                                LineEndingType::LF => {
+                                le::LineEndingType::LF => {
                                     if stats.is_lf() {
                                         println!("{} has LF line endings", path_display);
                                     }
                                 }
-                                LineEndingType::CRLF => {
+                                le::LineEndingType::CRLF => {
                                     if stats.is_crlf() {
                                         println!("{} has CRLF line endings", path_display);
                                     }
                                 }
-                                LineEndingType::MIXED => {
+                                le::LineEndingType::MIXED => {
                                     if stats.is_mixed() {
                                         println!("{} has mixed line endings", path_display);
                                         if print_line_numbers {
@@ -109,31 +85,4 @@ fn process_path(path: &str, match_on: &LineEndingType, print_line_numbers: bool)
             Err(err) => eprintln!("{}", err),
         }
     }
-}
-
-fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
-    const LINE_FEED: u8 = 0x0A;
-    const CARRIAGE_RETURN: u8 = 0x0D;
-
-    let mut stats = LineEndingStats {
-        lf: vec![],
-        crlf: vec![],
-    };
-    let mut prev: u8 = 0;
-    let mut line_number: usize = 1;
-
-    for byte in bytes.into_iter() {
-        if *byte == LINE_FEED {
-            if prev == CARRIAGE_RETURN {
-                stats.crlf.push(line_number);
-            } else {
-                stats.lf.push(line_number);
-            }
-            line_number += 1;
-        }
-
-        prev = *byte;
-    }
-
-    stats
 }
