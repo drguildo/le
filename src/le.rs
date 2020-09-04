@@ -50,3 +50,13 @@ pub fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
 
     stats
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn empty() {
+        let empty = "".as_bytes();
+        let stats = super::count_line_endings(empty);
+        assert_eq!(stats, super::LineEndingStats { lf: vec![], crlf: vec![] })
+    }
+}
