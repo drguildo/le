@@ -4,7 +4,7 @@ pub enum LineEndingType {
     MIXED,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct LineEndingStats {
     pub lf: Vec<usize>,
     pub crlf: Vec<usize>,
