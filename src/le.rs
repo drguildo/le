@@ -53,10 +53,107 @@ pub fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
 
 #[cfg(test)]
 mod tests {
+    use super::{count_line_endings, LineEndingStats};
+
     #[test]
     fn empty() {
         let empty = "".as_bytes();
-        let stats = super::count_line_endings(empty);
-        assert_eq!(stats, super::LineEndingStats { lf: vec![], crlf: vec![] })
+        let stats: LineEndingStats = count_line_endings(empty);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![],
+                crlf: vec![]
+            }
+        );
+        assert!(!stats.is_lf());
+        assert!(!stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
+
+    #[test]
+    fn single_lf() {
+        let lf = "\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(lf);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![1],
+                crlf: vec![]
+            }
+        );
+        assert!(stats.is_lf());
+        assert!(!stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
+
+    #[test]
+    fn single_crlf() {
+        let crlf = "\r\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(crlf);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![],
+                crlf: vec![1]
+            }
+        );
+        assert!(!stats.is_lf());
+        assert!(stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
+
+    #[test]
+    fn multiple_lf() {
+        let multiple_lf = "\n\n\n\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(multiple_lf);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![1, 2, 3, 4],
+                crlf: vec![]
+            }
+        );
+        assert!(stats.is_lf());
+        assert!(!stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
+
+    #[test]
+    fn multiple_crlf() {
+        let multiple_crlf = "\r\n\r\n\r\n\r\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(multiple_crlf);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![],
+                crlf: vec![1, 2, 3, 4]
+            }
+        );
+        assert!(!stats.is_lf());
+        assert!(stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
+
+    #[test]
+    fn mixed() {
+        let mixed = "\n\r\n\n\r\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(mixed);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![1, 3],
+                crlf: vec![2, 4]
+            }
+        );
+        assert!(!stats.is_lf());
+        assert!(!stats.is_crlf());
+        assert!(stats.is_mixed());
     }
 }
