@@ -8,14 +8,14 @@ fn main() {
         .author(crate_authors!())
         .about(crate_description!())
         .arg(
-            Arg::with_name("LINE_NUMBERS")
+            Arg::with_name("line_numbers")
                 .help("If the file contains mixed line endings, print which lines contain which line endings.")
                 .short("l")
                 .long("line-numbers")
                 .takes_value(false),
         )
         .arg(
-            Arg::with_name("TYPE")
+            Arg::with_name("type")
                 .help("The type of line endings to search for")
                 .short("t")
                 .long("type")
@@ -24,22 +24,22 @@ fn main() {
                 .default_value("mixed"),
         )
         .arg(
-            Arg::with_name("PATHS")
+            Arg::with_name("paths")
                 .help("The paths to process")
                 .required(true)
                 .multiple(true),
         )
         .get_matches();
 
-    let match_on: le::LineEndingType = match matches.value_of("TYPE").unwrap() {
+    let match_on: le::LineEndingType = match matches.value_of("type").unwrap() {
         "lf" => le::LineEndingType::LF,
         "crlf" => le::LineEndingType::CRLF,
         _ => le::LineEndingType::MIXED,
     };
 
-    let print_line_numbers: bool = matches.is_present("LINE_NUMBERS");
+    let print_line_numbers: bool = matches.is_present("line_numbers");
 
-    for path in matches.values_of("PATHS").unwrap() {
+    for path in matches.values_of("paths").unwrap() {
         process_path(path, &match_on, print_line_numbers);
     }
 }
