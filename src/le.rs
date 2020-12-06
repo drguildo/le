@@ -12,15 +12,15 @@ pub struct LineEndingStats {
 
 impl LineEndingStats {
     pub fn is_lf(&self) -> bool {
-        self.lf.len() > 0 && self.crlf.is_empty()
+        !self.lf.is_empty() && self.crlf.is_empty()
     }
 
     pub fn is_crlf(&self) -> bool {
-        self.lf.is_empty() && self.crlf.len() > 0
+        self.lf.is_empty() && !self.crlf.is_empty()
     }
 
     pub fn is_mixed(&self) -> bool {
-        self.lf.len() > 0 && self.crlf.len() > 0
+        !self.lf.is_empty() && !self.crlf.is_empty()
     }
 }
 
