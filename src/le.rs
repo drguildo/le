@@ -35,7 +35,7 @@ pub fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
     let mut prev: u8 = 0;
     let mut line_number: usize = 1;
 
-    for byte in bytes.into_iter() {
+    for byte in bytes.iter() {
         if *byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf.push(line_number);
