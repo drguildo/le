@@ -1,12 +1,12 @@
+use clap::{App, Arg};
+
 mod le;
 
 fn main() {
-    use clap::{crate_authors, crate_description, crate_name, crate_version, App, Arg};
-
-    let matches = App::new(crate_name!())
-        .version(crate_version!())
-        .author(crate_authors!())
-        .about(crate_description!())
+    let matches = App::new(clap::crate_name!())
+        .version(clap::crate_version!())
+        .author(clap::crate_authors!())
+        .about(clap::crate_description!())
         .arg(
             Arg::with_name("line_numbers")
                 .help("If the file contains mixed line endings, print which lines contain which line endings.")
