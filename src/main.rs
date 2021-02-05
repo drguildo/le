@@ -8,6 +8,12 @@ fn main() {
         .author(clap::crate_authors!())
         .about(clap::crate_description!())
         .arg(
+            Arg::with_name("glob_pattern")
+                .help("The glob pattern a file must match to be processed")
+                .short("g")
+                .long("glob")
+                .takes_value(true))
+        .arg(
             Arg::with_name("line_numbers")
                 .help("If the file contains mixed line endings, print which lines contain which line endings.")
                 .short("l")
@@ -40,15 +46,32 @@ fn main() {
     let print_line_numbers: bool = matches.is_present("line_numbers");
 
     for path in matches.values_of("paths").unwrap() {
-        process_path(path, &match_on, print_line_numbers);
+        if let Some(glob_string) = matches.value_of("glob_pattern") {
+            let glob_pattern =
+                glob::Pattern::new(glob_string).expect("Failed to read glob pattern");
+            process_path(path, Some(&glob_pattern), &match_on, print_line_numbers);
+        } else {
+            process_path(path, None, &match_on, print_line_numbers);
+        }
     }
 }
 
-fn process_path(path: &str, match_on: &le::LineEndingType, print_line_numbers: bool) {
+fn process_path(
+    path: &str,
+    glob_pattern: Option<&glob::Pattern>,
+    match_on: &le::LineEndingType,
+    print_line_numbers: bool,
+) {
     for entry in walkdir::WalkDir::new(path) {
         match entry {
             Ok(entry) => {
                 if entry.file_type().is_file() {
+                    if let Some(glob_pattern) = glob_pattern {
+                        if !glob_pattern.matches_path(entry.path()) {
+                            continue;
+                        }
+                    }
+
                     let path_display = entry.path().display();
                     match std::fs::read(entry.path()) {
                         Ok(file_bytes) => {
