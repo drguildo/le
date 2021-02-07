@@ -36,6 +36,14 @@ pub fn count_line_endings(bytes: &[u8]) -> LineEndingStats {
     let mut line_number: usize = 1;
 
     for byte in bytes.iter() {
+        // If a file contains a null byte, we consider it binary data
+        // and bail out.
+        if *byte == 0 {
+            stats.crlf.clear();
+            stats.lf.clear();
+            break;
+        }
+
         if *byte == LINE_FEED {
             if prev == CARRIAGE_RETURN {
                 stats.crlf.push(line_number);
