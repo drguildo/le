@@ -164,4 +164,21 @@ mod tests {
         assert!(!stats.is_crlf());
         assert!(stats.is_mixed());
     }
+
+    #[test]
+    fn binary() {
+        let binary = "\n\0\n".as_bytes();
+        let stats: LineEndingStats = count_line_endings(binary);
+
+        assert_eq!(
+            stats,
+            LineEndingStats {
+                lf: vec![],
+                crlf: vec![]
+            }
+        );
+        assert!(!stats.is_lf());
+        assert!(!stats.is_crlf());
+        assert!(!stats.is_mixed());
+    }
 }
