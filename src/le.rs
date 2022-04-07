@@ -1,7 +1,7 @@
 pub enum LineEndingType {
-    LF,
-    CRLF,
-    MIXED,
+    Lf,
+    Crlf,
+    Mixed,
 }
 
 #[derive(Debug, PartialEq)]

@@ -67,17 +67,17 @@ fn process_path(path: &str, config: &Configuration) {
                             let stats = le::count_line_endings(&file_bytes);
 
                             match config.match_on {
-                                le::LineEndingType::LF => {
+                                le::LineEndingType::Lf => {
                                     if stats.is_lf() {
                                         println!("{} has LF line endings", path_display);
                                     }
                                 }
-                                le::LineEndingType::CRLF => {
+                                le::LineEndingType::Crlf => {
                                     if stats.is_crlf() {
                                         println!("{} has CRLF line endings", path_display);
                                     }
                                 }
-                                le::LineEndingType::MIXED => {
+                                le::LineEndingType::Mixed => {
                                     if stats.is_mixed() {
                                         println!("{} has mixed line endings", path_display);
                                         if config.print_line_numbers {
@@ -102,14 +102,14 @@ fn process_path(path: &str, config: &Configuration) {
 fn get_configuration(matches: &ArgMatches) -> Configuration {
     let mut config = Configuration {
         glob_pattern: None,
-        match_on: le::LineEndingType::MIXED,
+        match_on: le::LineEndingType::Mixed,
         print_line_numbers: false,
     };
 
     config.match_on = match matches.value_of("type").unwrap() {
-        "lf" => le::LineEndingType::LF,
-        "crlf" => le::LineEndingType::CRLF,
-        _ => le::LineEndingType::MIXED,
+        "lf" => le::LineEndingType::Lf,
+        "crlf" => le::LineEndingType::Crlf,
+        _ => le::LineEndingType::Mixed,
     };
 
     config.print_line_numbers = matches.is_present("line_numbers");
