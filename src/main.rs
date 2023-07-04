@@ -1,4 +1,4 @@
-use clap::{App, Arg, ArgMatches};
+use clap::{value_parser, Arg, ArgMatches, Command};
 
 mod le;
 
@@ -9,43 +9,42 @@ struct Configuration {
 }
 
 fn main() {
-    let matches = App::new(clap::crate_name!())
+    let matches = Command::new(clap::crate_name!())
         .version(clap::crate_version!())
         .author(clap::crate_authors!())
         .about(clap::crate_description!())
         .arg(
-            Arg::with_name("glob_pattern")
+            Arg::new("glob_pattern")
                 .help("The glob pattern a file must match to be processed")
-                .short("g")
+                .short('g')
                 .long("glob")
-                .takes_value(true))
+                .value_parser(value_parser!(String)))
         .arg(
-            Arg::with_name("line_numbers")
+            Arg::new("line_numbers")
                 .help("If the file contains mixed line endings, print which lines contain which line endings.")
-                .short("l")
+                .short('l')
                 .long("line-numbers")
-                .takes_value(false),
+                .action(clap::ArgAction::SetTrue),
         )
         .arg(
-            Arg::with_name("type")
+            Arg::new("type")
                 .help("The type of line endings to search for")
-                .short("t")
+                .short('t')
                 .long("type")
-                .takes_value(true)
-                .possible_values(["crlf", "lf", "mixed"].as_ref())
+                .value_parser(["crlf", "lf", "mixed"])
                 .default_value("mixed"),
         )
         .arg(
-            Arg::with_name("paths")
+            Arg::new("paths")
                 .help("The paths to process")
                 .required(true)
-                .multiple(true),
+                .action(clap::ArgAction::Append),
         )
         .get_matches();
 
     let config = get_configuration(&matches);
 
-    for path in matches.values_of("paths").unwrap() {
+    for path in matches.get_many::<String>("paths").unwrap() {
         process_path(path, &config);
     }
 }
@@ -106,15 +105,15 @@ fn get_configuration(matches: &ArgMatches) -> Configuration {
         print_line_numbers: false,
     };
 
-    config.match_on = match matches.value_of("type").unwrap() {
+    config.match_on = match matches.get_one::<String>("type").unwrap().as_str() {
         "lf" => le::LineEndingType::Lf,
         "crlf" => le::LineEndingType::Crlf,
         _ => le::LineEndingType::Mixed,
     };
 
-    config.print_line_numbers = matches.is_present("line_numbers");
+    config.print_line_numbers = matches.get_flag("line_numbers");
 
-    if let Some(glob_string) = matches.value_of("glob_pattern") {
+    if let Some(glob_string) = matches.get_one::<String>("glob_pattern") {
         config.glob_pattern =
             Some(glob::Pattern::new(glob_string).expect("Failed to read glob pattern"));
     }
